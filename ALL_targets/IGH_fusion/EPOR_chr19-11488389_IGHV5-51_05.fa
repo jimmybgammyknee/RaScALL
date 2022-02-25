@@ -1,0 +1,4 @@
+>hg19_dna range=chr19:11488357-11488389 5'pad=32 3'pad=0 strand=- repeatMasking=none
+TGGGCATAGGCCATAGGGATAGAAGTTAAAGTT
+>Z27449|IGHV5-51*05|Homo sapiens|F|V-REGION|1..245|245 nt|3| | || |245+0=245|partial in 5' and in 3' | |
+CTTACAGGAGATCTTCAGAGACTCCCCGGGCTTTT

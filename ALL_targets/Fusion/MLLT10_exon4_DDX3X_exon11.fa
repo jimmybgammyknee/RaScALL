@@ -1,0 +1,4 @@
+>hg19_dna range=chr10:21840820-21840850 5'pad=30 3'pad=0 strand=+ repeatMasking=none
+TTCAAGCGATTCTCCTGCCTCAGCCTCCCAA
+>hg19_dna range=chrX:41204433-41204463 5'pad=0 3'pad=30 strand=+ repeatMasking=none
+ATACTTGGTGTTAGATGAAGCTGATCGGATG

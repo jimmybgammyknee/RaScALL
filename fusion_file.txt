@@ -1,0 +1,2 @@
+gene1_symbol	gene1_id	gene1_exons	gene2_symbol	gene2_id	gene2_exons	target_length
+EBF1	NM_024007	11:15	PDGFRB	NM_002609	9:11	62
