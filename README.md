@@ -33,8 +33,15 @@ git clone https://github.com/jimmybgammyknee/RaScALL.git
 
 ```
 cd RaScALL
-bash install.sh
+bash install_km_Release13.sh
 ```
+
+4. Finally, we wish to install R into the conda environment to allow use of Rscripts to filter output from km and also generate custom target sequences. If you already have R installed and in the path then this step may not be required.
+
+```
+conda install -c conda-forge r-base r-essentials
+```
+
 
 ## Quick Start
 
@@ -90,9 +97,9 @@ The final target set 'IGH_fusion' contains the greatest number of targets given 
 
 #### Collate results
 
-The text file produced by km indicates results for all target sequences provided for a given mutation type. Many of these will be null results (no mutation identified). We have therefore written an R script that reads in these raw output files, filteres the output for identified fusions/variants and provides some additional annotation (e.g. AA.Change for a detected SNV/InDel). The script will then write to the sample output directory a csv file containing idenified mutations of any type tested.
+The text file produced by km indicates results for all target sequences provided for a given mutation type. Many of these will be null results (no mutation identified). We have therefore written an R script that reads in these raw output files, filteres for identified fusions/sequence variants and provides some additional annotation (e.g. AA.Change for a detected SNV/InDel). The script will then write to the sample output directory a csv file containing idenified mutations of any type tested.
 
-The R script requires the following libraries (tidyverse, Biostrings, here). If not already present the script will install these required packages the frist time it is run.
+The R script requires the following libraries (tidyverse, Biostrings, rtracklayer). If not already present the script will install these required packages the frist time it is run.
 
 4. To run on a single sample the script requires an argument specifying the relative path to the output directory for the sample under analysis.
 
@@ -137,19 +144,29 @@ bash helper_script.sh sampleSheet.tsv 10
 
 ## Generating custom fusion and variant targets
 
-While the targets provided represent commonly observed fusions and clinically relevant sequence variants this list is not complete. ALL is a highly heterogenous disease and a large number of rare or novel fusions have been identified and implicated in disease development and progression. Furthermore, research is regularly identifying additional clinically relevant variants. To enable users to generate their own list of desired fusion/SNV/InDel targets we have generated two scripts for producing user defined fusions and sequence variants. This script requires a gtf file and associated reference genome.
+While the targets provided represent commonly observed fusions and clinically relevant sequence variants this list is not complete. ALL is a highly heterogenous disease and a large number of rare or novel fusions have been identified and implicated in disease development and progression. Furthermore, research is regularly identifying additional clinically relevant variants. To enable users to generate their own list of desired fusion/SNV/InDels for investigation we have generated two scripts for producing user defined fusions and sequence variants. This script requires a gtf file and associated reference genome.
 
-To generate custom fusion targets a tab separated text file listing the genes and exons involved in the fusion as well as desired length of targets is needed. Columns within the text file should represent 1. Gene name of 5' fusion partner; 2. Exon range listing exons that are  likely break-points for 5' fusion partner; 3. Gene name of 3' fusion partner; 4. Exon range listing exons that are  likely break-points for 3' fusion partner; Desired target length (Note 62 is the minimum target length for k-mer size 31. Longer targets can be specified (e.g. 100 or 150 but must be an even number).
+To generate custom fusion targets a tab separated text file listing the genes, transcript identifier and exons involved in the fusion as well as desired length of targets is needed. Columns within the text file should represent: 
+      1. Gene name of 5' fusion partner; 
+      2. Transcript identifier for the 5' fusion partern transcript to be utilised for generating the target; 
+      3. Exon range listing exons that are  likely break-points for 5' fusion partner; 
+      4. Gene name of 3' fusion partner; 
+      5. Transcript identifier for the 5' fusion partern transcript to be utilised for generating the target; 
+      6. Exon range listing exons that are likely break-points for 3' fusion partner; 
+      7. Desired target length (Note 62 is the minimum target length for k-mer size 31. Longer targets can be specified (e.g. 100 or 150 but must be an even number).
 
 For example:
 
 ```
-cat fusionPairs.txt
-MEF2D	4:8	CSF1R	10:12	62
-MEF2D	4:8	BCL9	8:11	62
-MEF2D	4:8	SS18	5:7	62
+cat fusion_file.txt
+gene1_symbol      gene1_id    gene1_exons gene2_symbol      gene2_id    gene2_exons target_length
+EBF1  NM_024007   11:15 PDGFRB      NM_002609   9:11  62
 
 ```
+
+The above text file would be used to generate 15 fusion target sequences for EBF1::PDGFRB, combining sequence from the EBF1 ref-seq transcript NM_024007 exons 11 to 15 with sequence from PDGFRB ref-seq transcript NM_002609 exons 9 to 11.
+
+Note that the gene_id (transcript identifier) needs to be present in the gtf file and version you provide for creating target sequences. If utilising an ensembl gtf file then replace with the ensembl transcript_id for the gene of interest.
 
 1. To view the required arguments for custom_fusion_targets.sh:
 
@@ -168,24 +185,25 @@ Usage: custom_fusion_targets.sh [FUSION_FILE] [GTF] [REF] [OUT_DIR]
 
 ```
 
-This script currently only accepts __Ensembl__ GTF and reference genomes. User can either add the additional fusion targets to the ALL_targets/Fusion directory or specify an alternate directory location for writing generated targets.
+This script currently accepts __UCSC__ and __Ensembl__ GTF and reference genomes. The user can either add the additional fusion targets to the ALL_targets/Fusion directory or specify an alternate directory location for writing generated target sequences.
 
-2. To run custom_fusion_targets.sh using the above fusionPairs.txt file and add them the the ALL_targets/Fusion directory:
+2. To run custom_fusion_targets.sh using the above fusion_file.txt and add them the the ALL_targets/Fusion directory:
 
 ```
-bash custom_fusion_targets.sh fusionPairs.txt ~/genomes/Ensembl/GRCh37/ref-transcripts.gtf ~/genomes/Ensembl/GRCh37/GRCh37.fa.gz ~/km_ALL_targets/ALL_targets/Fusion
+bash custom_fusion_targets.sh fusion_file.txt /path/to/hg19.refGene.gtf.gz /path/to/hg19.fa.gz ALL_targets/Fusion
 ```
 
-To generate custom variant targets a tab separated text file listing the gene name and amino acid positions to target is required. Targets can be generated to span more than one amino acid position, but it is advised that the number of amino acids assessed in a give target be limited to 3-5. Targets cannot be generated for the first 11 amino acids in a gene as this requires inclusion of bases from the 5' UTR.
+To generate custom sequence variant targets a tab separated text file listing the gene name, transcript identifier and amino acid positions to target is required. Targets can be generated to span more than one amino acid position, but it is advised that the number of amino acids assessed in a give target be limited to 3-5. Targets _cannot_ be generated for the first 11 amino acids in a gene as this requires inclusion of bases from the 5' UTR.
 
 Example text file containing information for generating custom variant targets:
 
 ```
-cat SNVtargets.txt
-PAX5  80    80
-NRAS  12    13
+cat variant_file.txt
+gene_symbol transcript_id     pos1  pos2
+PAX5  NM_016734   80    80
+NRAS  NM_002524   12    13
 ```
-As shown above, where only a single aminao acid position is desired from the target, this position should be repeated in column 3. Where the target should span more than one amino acid position the first amino acid position should be place in column 2 and the final amino acid position in column 3.
+As shown above, where only a single aminao acid position is desired from the target, this position should be repeated in column 4. Where the target sequence should span more than one amino acid position the first amino acid position should be placed in column 3 and the final amino acid position in column 4.
 
 3. To view the required arguments for custom_fusion_targets.sh:
 
@@ -208,7 +226,7 @@ Usage: custom_variant_targets.sh [SNV_FILE] [GTF] [REF] [OUT_DIR]
 4. To run custom_variant_targets.sh using the above SNVtargets.txt file and add them the the ALL_targets/SNV directory:
 
 ```
-bash custom_variant_targets.sh SNVtargets.txt ~/genomes/Ensembl/GRCh37/ref-transcripts.gtf ~/genomes/Ensembl/GRCh37/GRCh37.fa.gz ~/km_ALL_targets/ALL_targets/SNV
+bash custom_variant_targets.sh SNVtargets.txt /path/to/hg19.refGene.gtf.gz /path/to/hg19.fa.gz ALL_targets/SNV
 ```
 
 
