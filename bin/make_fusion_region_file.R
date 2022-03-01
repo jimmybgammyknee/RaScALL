@@ -7,6 +7,18 @@
 
 ## variation on generate_fusion_target_sequence_regions using rtracklayer to read gtf file
 
+## Default repo
+local({r <- getOption("repos")
+       r["CRAN"] <- "http://cran.r-project.org"
+       options(repos=r)
+})
+
+# Install stuff when needed
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+BiocManager::install(c("tidyverse","Biostrings", "rtracklayer"), ask = F, update = F)
+}
+
 # load required libraries
 suppressMessages(library(tidyverse, warn.conflicts = F, quietly = T))
 suppressMessages(library(rtracklayer, warn.conflicts = F, quietly = T))

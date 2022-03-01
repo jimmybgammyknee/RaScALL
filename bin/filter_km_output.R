@@ -8,21 +8,26 @@
 ## a sample run of seq files was downloaded, converted to k-mer count table and run through km for fusions, variants and IKZF1 del
 ## this script is designed to collate and filter output from each sample in the run, to make reporting at MTB easier
 
+## Default repo
+local({r <- getOption("repos")
+       r["CRAN"] <- "http://cran.r-project.org" 
+       options(repos=r)
+})
+
 # Install stuff when needed
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager")
-  BiocManager::install(c("tidyverse", "Biostrings", "here"), ask = F, update = F)
+  BiocManager::install(c("tidyverse", "Biostrings", "rtracklayer"), ask = F, update = F)
 }
 
 # Load sneakily
 suppressMessages(library(tidyverse, warn.conflicts = F, quietly = T))
 suppressMessages(library(Biostrings, warn.conflicts = F, quietly = T))
-# suppressMessages(library(here, warn.conflicts = F, quietly = T))
 
 # collect arguments
 args <- commandArgs(trailingOnly = TRUE)
 
-# args[1] output dir for sample e.g. "/home/SAHMRI.INTERNAL/jacqueline.rehn/software/output/sampleFile"
+# args[1] output dir for sample e.g. "output/sampleFile"
 
 # catch error when no arguments passed
 if(length(args) <1) {
