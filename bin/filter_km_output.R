@@ -108,32 +108,36 @@ if (isTRUE(file.exists(fusionFile))) {
     arrange(Alteration, Type, desc(Min_coverage))
   
   ### where fusion called multiple times extract most likely breakpoint(s) ###
+              ### if no fusions called skip this process ###
   
-  # group by Alteration and for each group extract the 'Sequence' for Type == "Reference"
-  topBreakpoint <- km_fusions %>% 
-    # group by alteration for instances where multiple fusions were called
-    group_by(Alteration) %>% 
-    # select top row for each fusion
-    filter(row_number()==1) %>% 
-    ungroup()
+  if(nrow(km_fusions) > 0) {
   
-  ## for each fusion detected:
-  for(i in 1:nrow(topBreakpoint)){
+    # group by Alteration and for each group extract the 'Sequence' for Type == "Reference"
+    topBreakpoint <- km_fusions %>% 
+      # group by alteration for instances where multiple fusions were called
+      group_by(Alteration) %>% 
+      # select top row for each fusion
+      filter(row_number()==1) %>% 
+      ungroup()
+  
+    ## for each fusion detected:
+    for(i in 1:nrow(topBreakpoint)){
     
-    # perform pattern matching and generate vector indicating if pattern found & therefore row/output should be dropped
-    dropRows <- grepl(topBreakpoint$Sequence[i], km_fusions$Sequence)
-    # remove rows where the reference sequence was a substring of the other breakpoints identified
-    km_fusions <- km_fusions[!dropRows,]
+      # perform pattern matching and generate vector indicating if pattern found & therefore row/output should be dropped
+      dropRows <- grepl(topBreakpoint$Sequence[i], km_fusions$Sequence)
+      # remove rows where the reference sequence was a substring of the other breakpoints identified
+      km_fusions <- km_fusions[!dropRows,]
     
-  }
+    }
   
-  # combine any remaining rows with the most likely breakpoints
-  km_fusions <- topBreakpoint %>% 
-    bind_rows(km_fusions) %>% 
-    # arrange by fusion
-    arrange(Alteration, desc(Min_coverage))
+    # combine any remaining rows with the most likely breakpoints
+    km_fusions <- topBreakpoint %>% 
+      bind_rows(km_fusions) %>% 
+      # arrange by fusion
+      arrange(Alteration, desc(Min_coverage))
+    
+  }  
   
-
 }
 
 ############# SNVs #############
@@ -169,38 +173,40 @@ if (isTRUE(file.exists(SNVFile))) {
     # add fileName as a field in data.frame
     tibble::add_column(File = basename(SNVFile))
   
-  ## Build SNV_anno file for targets tested against
-  SNV_anno <- km_SNV %>% 
-    dplyr::select(Query,Reference_sequence) %>% 
-    distinct(Query, .keep_all = TRUE) %>% 
-    separate(Query, c("Gene","Target_AA"), sep = "_", remove = FALSE) %>% 
-    ### determine the first_aa in string
-    # extract first target aa
-    mutate(Target_AA = gsub("-.*","",Target_AA)) %>% 
-    # remove characters leaving just the aa number
-    mutate(Target_AA = gsub("[^0-9.-]", "", Target_AA)) %>% 
-    # convert Target_AA from character to numeric
-    mutate(Target_AA = as.numeric(Target_AA)) %>% 
-    # subtract 11 to obtain the first aa position
-    mutate(first_aa_pos = (Target_AA - 11)) 
+  ## Build SNV_anno file for targets tested against - but only if variants were detected
+  if(nrow(km_SNV) > 0) {
+  
+    SNV_anno <- km_SNV %>% 
+      dplyr::select(Query,Reference_sequence) %>% 
+      distinct(Query, .keep_all = TRUE) %>% 
+      separate(Query, c("Gene","Target_AA"), sep = "_", remove = FALSE) %>% 
+      ### determine the first_aa in string
+      # extract first target aa
+      mutate(Target_AA = gsub("-.*","",Target_AA)) %>% 
+      # remove characters leaving just the aa number
+      mutate(Target_AA = gsub("[^0-9.-]", "", Target_AA)) %>% 
+      # convert Target_AA from character to numeric
+      mutate(Target_AA = as.numeric(Target_AA)) %>% 
+      # subtract 11 to obtain the first aa position
+      mutate(first_aa_pos = (Target_AA - 11)) 
     
-  # use biostrings to convert Ref_sequence for RNA to amino acid
-  SNV_anno <- SNV_anno %>% 
-    dplyr::select(Query, Reference_sequence) %>% 
-    # use tibble::deframe to convert to a named vector
-    tibble::deframe() %>% 
-    # convert to a DNAStringSet
-    DNAStringSet() %>% 
-    # translate to Amino acid sequence
-    translate(no.init.codon = TRUE) %>% 
-    # convert to a data.frame so easier to read
-    as.vector() %>% 
-    tibble::enframe() %>% 
-    dplyr::rename(Query = name, Ref_AAseq = value) %>% 
-    # combine with other information (i.e. first_aa)
-    left_join(SNV_anno, by = "Query")
-
-
+    # use biostrings to convert Ref_sequence for RNA to amino acid
+    SNV_anno <- SNV_anno %>% 
+      dplyr::select(Query, Reference_sequence) %>% 
+      # use tibble::deframe to convert to a named vector
+      tibble::deframe() %>% 
+      # convert to a DNAStringSet
+      DNAStringSet() %>% 
+      # translate to Amino acid sequence
+      translate(no.init.codon = TRUE) %>% 
+      # convert to a data.frame so easier to read
+      as.vector() %>% 
+      tibble::enframe() %>% 
+      dplyr::rename(Query = name, Ref_AAseq = value) %>% 
+      # combine with other information (i.e. first_aa)
+      left_join(SNV_anno, by = "Query")
+  
+  }
 
   ### Annotate with AA change ###
 
@@ -538,16 +544,17 @@ km_results <- km_results %>%
   mutate(File = gsub("focal_deletions","focalDeletion",File)) %>% 
   mutate(File = gsub("IGH_fusion","IGH",File)) %>% 
   # extract Target type from fileName
-  tidyr::separate(File, c(NA, "Target_Type"), sep = "_") %>%
+  tidyr::separate(File, c("File", "Target_Type"), sep = "_") %>%
   # reorder columns to place Target_Type first
-  select(Target_Type, Alteration, everything())
+  select(File, Target_Type, Alteration, everything())
 
 
 # specify output location
-outputFile <- resultFiles[1] %>% gsub("_.+", "_final_variants.csv", .)
+outputFile <- basename(resultFiles[1]) %>% gsub("_.+", "_final_variants.csv", .)
+outputPath <- paste(dirname(resultFiles[1]), outputFile, sep = "/")
 
 # write filtered results to csv file
-write.csv(km_results, file=outputFile, row.names = FALSE)
+write.csv(km_results, file=outputPath, row.names = FALSE)
 
 
   
