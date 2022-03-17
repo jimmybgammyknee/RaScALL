@@ -1,14 +1,14 @@
 
-# `km` analysis with SAHMRI ALL targets
+# `RaScALL` - Rapid (Ra) Screening (Sc) of RNA-seq data for genomic alterations in Acute Lymphoblastic Leukaemia (ALL)
 
 ## Overview
 
-Jimmy Breen : jimmy.breen@sahrmi.com 
+Jimmy Breen : Jimmy.Breen@telethonkids.org.com 
 Jacqueline Rehn : jacqueline.rehn@sahmri.com
 
-This approach to detection of clinically relevant variants in ALL utilises jellyfish (https://github.com/gmarcais/Jellyfish) and a k-mer variant detection software 'km' (https://github.com/iric-soft/km). Additionally, RaScALL provides targets designed for detection of ALL specific gene fusions and variants. Within this repository there are targets developed for detection of 21 recurrently observed in-frame gene fusions as well as 15 pathogenic SNVs, with additional targets for detection of intragenic deletions of _IKZF1_ and _ERG_. Targets have also been developed for detection of _IGH-EPOR_ and _IGH-CRLF2_ as well as detection of _DUX4_ expression indicative of a _DUX4_-rearrangement. 
+This approach to detection of clinically relevant variants in ALL utilises jellyfish (https://github.com/gmarcais/Jellyfish) and a k-mer variant detection software 'km' (https://github.com/iric-soft/km). Additionally, RaScALL provides targets designed for detection of ALL specific gene fusions and variants. Within this repository there are targets developed for detection of recurrently observed in-frame gene fusions as well as pathogenic SNVs, with additional targets for detection of intragenic deletions of _IKZF1_ and _ERG_. Targets have also been developed for detection of _IGH-EPOR_ and _IGH-CRLF2_ as well as detection of _DUX4_ expression indicative of a _DUX4_-rearrangement. 
 
-Together these tools can quickly detect the presence of many ALL specific variants from raw RNA-seq fastq data. The instructions below will enable installation of both km & jellyfish as well as provide a simple script to perform variant detection from fastq files. Incorporation of samtools into the environment enables the user to generate their own custom target sequences for variant detection.
+Together these tools can rapidly detect the presence of many ALL specific genomic alterations from raw RNA-seq data (fastq). The instructions below will enable installation of both km & jellyfish as well as provide a simple script to perform variant detection from fastq files. Incorporation of R and samtools into the environment enables the user to generate their own custom target sequences for variant detection.
 
 
 ## Create conda environment
