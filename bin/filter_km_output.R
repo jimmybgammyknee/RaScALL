@@ -494,7 +494,7 @@ if (isTRUE(file.exists(IGHFile))) {
     dplyr::select(Query,Type,Variant_name,rVAF,Expression,
                   Min_coverage,Sequence,Reference_sequence) %>%
     # select query with greatest support (if > 1 path detected for a single fusion/break-point)
-    dplyr::arrange(Query,desc(Min_coverage,Expression)) %>%
+    dplyr::arrange(Query,desc(Min_coverage),desc(Expression)) %>%
     dplyr::distinct(Query, .keep_all=TRUE) %>%
     # re-order results to list break-point with greatest support at top
     dplyr::arrange(desc(rVAF),desc(Min_coverage),desc(Expression)) %>%
