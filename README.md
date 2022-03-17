@@ -1,5 +1,5 @@
 
-# `RaScALL` - Rapid (Ra) Screening (Sc) of RNA-seq data for genomic alterations in Acute Lymphoblastic Leukaemia (ALL)
+# RaScALL - Rapid (Ra) Screening (Sc) of RNA-seq data for genomic alterations in Acute Lymphoblastic Leukaemia (ALL)
 
 ## Overview
 
