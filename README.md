@@ -13,14 +13,15 @@ Together these tools can rapidly detect the presence of many ALL specific genomi
 
 ## Create conda environment
 
-1. To install and run RaScALL we'll need to create a conda environment for installation of km, jellyfish and samtools. Jellyfish needs additional python bindings to work with km, so we have created an install procedure to follow. This procedure requires that the command-line utility 'curl' be installed on your machine.
+1. To install and run RaScALL we'll need to create a conda environment for installation of km, jellyfish and samtools. Jellyfish needs additional python bindings to work with km, so we have created an install procedure to follow. This procedure requires that the command-line utility 'curl' be installed on your machine. Here we have also installed the fast solver library `mamba` to ensure that packages are install quickly.
 
 ```
+conda install mamba -n base -c conda-forge
 conda create -n RaScALL python=3.7 virtualenv -y
 conda activate RaScALL
 conda config --add channels bioconda
 conda config --add channels conda-forge
-conda install samtools==1.11
+mamba install samtools==1.11
 ```
 
 2. Next we will clone the git repository containing the targets generated for detecting ALL specific fusions/variants as well as bash scripts to install and run km against these targets. 
@@ -39,7 +40,7 @@ bash install_km_Release13.sh
 4. Finally, we wish to install R into the conda environment to allow use of Rscripts to filter output from km and also generate custom target sequences. If you already have R installed and in the path then this step may not be required.
 
 ```
-conda install -c conda-forge r-base r-essentials
+mamba install -c conda-forge r-base r-essentials
 ```
 
 
