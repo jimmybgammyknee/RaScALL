@@ -26,11 +26,11 @@ while read line; do
   R2=$(echo $line | awk '{ print $2 }')
   
   # Run_km
-  bash run_km.sh ${R1} ${R2} ${THREAD} ~/km_ALL_targets/ALL_targets/Fusion
-  bash run_km.sh ${R1} ${R2} ${THREAD} ~/km_ALL_targets/ALL_targets/DUX4
-  bash run_km.sh ${R1} ${R2} ${THREAD} ~/km_ALL_targets/ALL_targets/SNV
-  bash run_km.sh ${R1} ${R2} ${THREAD} ~/km_ALL_targets/ALL_targets/focal_deletions
-  # bash run_km.sh ${R1} ${R2} ${THREAD} ~/km_ALL_targets/ALL_targets/IGH_fusion
+  bash run_km.sh ${R1} ${R2} ${THREAD} ALL_targets/Fusion
+  bash run_km.sh ${R1} ${R2} ${THREAD} ALL_targets/DUX4
+  bash run_km.sh ${R1} ${R2} ${THREAD} ALL_targets/SNV
+  bash run_km.sh ${R1} ${R2} ${THREAD} ALL_targets/focal_deletions
+  bash run_km.sh ${R1} ${R2} ${THREAD} ALL_targets/IGH_fusion
   
   # Directory setup for running Rscript
   SAMPLE=`basename ${R1} | sed 's/_[^_]*$//'`
