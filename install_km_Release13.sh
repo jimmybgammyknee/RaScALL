@@ -9,7 +9,7 @@ VIRTUAL_ENV=${BASE}/.virtualenvs/km
 python3 -m venv .virtualenvs/km
 source .virtualenvs/km/bin/activate
 pip install --upgrade pip setuptools wheel
-pip install km-walk && echo "==> km installed"
+pip install km-walk==2.1.2 && echo "==> km installed"
 
 # install jellyfish with python binding
 mkdir -p ${SOFTWARE_DIR}
