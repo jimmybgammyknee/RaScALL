@@ -237,7 +237,9 @@ if (isTRUE(file.exists(SNVFile))) {
       # join this information with SNV_anno
       left_join(SNV_anno, by = "Query") %>% 
       # select just the info needed to determine AAchange
-      dplyr::select(name, Alt_AAseq,Ref_AAseq,first_aa_pos)
+      dplyr::select(name, Alt_AAseq,Ref_AAseq,first_aa_pos) %>% 
+      # add an empty column representing the AA.Change (once determined)
+      tibble::add_column(AA.Change = NA)
 
 
     ## Function to annotate each row of AAseqs
@@ -534,23 +536,32 @@ if (exists("DUX4_summary")) {
 }
 
 
+## add condition to prevent error if run on single target type and no variant found
 
+if (nrow(km_results) > 0){
 
 # Extract variant type from 'File' column and add as initial column
 km_results <- km_results %>%
-  # remove '.txt' from end of fileName
-  mutate(File = gsub(".txt","", File)) %>% 
-  mutate(File = gsub("_R1.fastq.gz","",File)) %>% 
+  # tidy targetType labels
   mutate(File = gsub("focal_deletions","focalDeletion",File)) %>% 
   mutate(File = gsub("IGH_fusion","IGH",File)) %>% 
   # extract Target type from fileName
-  tidyr::separate(File, c("File", "Target_Type"), sep = "_") %>%
+  mutate(Target_Type = str_extract(File, "(?<=_)[^_]+(?=\\.txt$)")) %>% 
+  mutate(File = gsub("_[^_]+$","",File)) %>% 
   # reorder columns to place Target_Type first
   select(File, Target_Type, Alteration, everything())
 
+} else {
+  
+  km_results <- km_results %>% 
+    mutate(Target_Type = "",
+           Alteration = "") %>% 
+    select(File, Target_Type, Alteration, everything())
+  
+}
 
 # specify output location
-outputFile <- basename(resultFiles[1]) %>% gsub("_.+", "_final_variants.csv", .)
+outputFile <- basename(resultFiles[1]) %>% gsub("_[^_]+$", "_final_variants.csv", .)
 outputPath <- paste(dirname(resultFiles[1]), outputFile, sep = "/")
 
 # write filtered results to csv file
