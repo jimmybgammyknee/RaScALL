@@ -165,8 +165,8 @@ if (isTRUE(file.exists(SNVFile))) {
   km_SNV <- km_SNV %>%
     # exclude results for info != vs_ref
     filter(Info == "vs_ref") %>%
-    # exclude results where the target sequence without variant was detected or where SNV ratio < 0.1
-    filter(Type != "Reference", rVAF >= 0.1) %>%
+    # exclude results where the target sequence without variant was detected
+    filter(Type != "Reference") %>%
     # select required cols
     dplyr::select(Query,Type,Variant_name,rVAF,Expression,
                   Min_coverage,Sequence,Reference_sequence) %>%
